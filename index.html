@@ -1,221 +1,334 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Artie 2027产品日历</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Artie 亚帝</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui, sans-serif;}
-body{background:#f5f2ee;color:#333;padding:16px;max-width:720px;margin:0 auto;}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
-h1{font-size:20px;font-weight:600;color:#553e2e;}
-.ctrl button{border:none;background:#553e2e;color:#fff;padding:6px 12px;border-radius:6px;margin:0 4px;cursor:pointer;}
-.month-pic{width:100%;height:240px;object-fit:cover;border-radius:10px;margin-bottom:12px;}
-.calendar-wrap{background:#fff;border-radius:12px;padding:14px;box-shadow:0 2px 10px #00000010;}
-.week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px;}
-.week span{text-align:center;font-size:13px;color:#888;padding:4px;}
-.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
-.day{
-  aspect-ratio:1/1;
-  border-radius:8px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  font-size:14px;
-  cursor:pointer;
-  padding:2px;
-  border:1px solid transparent;
+:root{
+  --green:#2d4b38; --green-soft:#e8efe9; --brown:#553e2e; --gold:#b88658;
+  --red:#b83c3c; --ink:#2b2b2b; --sub:#7a7a7a; --bg:#f5f2ee; --card:#fff;
 }
-.day:hover{border-color:#c9a88c;background:#faf6f2;}
-.day.other{color:#ccc;}
-.day.festival{color:#c83c3c;font-weight:bold;}
-.day.solar{color:#34784e;font-size:11px;}
-.day.has-note{position:relative;}
-.day.has-note::after{
-  content:"";
-  width:5px;height:5px;background:#c83c3c;border-radius:50%;
-  position:absolute;bottom:4px;
-}
-/* 备忘录弹窗 */
-.modal{
-  position:fixed;inset:0;background:#00000060;
-  display:none;align-items:center;justify-content:center;
-  padding:20px;
-}
-.modal-box{
-  width:100%;max-width:500px;background:#fff;border-radius:14px;padding:20px;
-}
-.modal h3{margin-bottom:12px;color:#553e2e;}
-#noteText{width:100%;min-height:140px;padding:10px;border:1px solid #ddd;border-radius:8px;resize:vertical;}
-.modal-btns{margin-top:12px;text-align:right;}
-.modal-btns button{padding:7px 14px;border:none;border-radius:6px;margin-left:6px;cursor:pointer;}
-.btn-save{background:#553e2e;color:#fff;}
-.btn-close{background:#eee;color:#333;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;max-width:720px;margin:0 auto;padding:14px 12px 90px;}
+
+/* 顶部 */
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.brand{font-size:17px;font-weight:700;color:var(--green);letter-spacing:.5px;}
+.brand small{display:block;font-size:11px;font-weight:400;color:var(--sub);letter-spacing:1px;}
+.brand-btn{font-size:13px;color:var(--green);border:1px solid var(--green);background:transparent;padding:6px 12px;border-radius:20px;cursor:pointer;}
+
+/* 月份标题 */
+.month-head{text-align:left;margin:6px 0 10px;}
+.month-head .y{font-size:11px;color:var(--sub);letter-spacing:2px;}
+.month-head .m{font-size:18px;font-weight:700;color:var(--green);margin-top:2px;}
+
+/* 产品图 */
+.pic-wrap{position:relative;width:100%;height:210px;border-radius:16px 16px 0 0;overflow:hidden;margin-bottom:0;background:linear-gradient(135deg,#dfe7e0,#f0e6da);}
+.pic-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.pic-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#9aa89c;gap:6px;}
+.pic-placeholder .big{font-size:34px;font-weight:700;letter-spacing:2px;}
+.pic-placeholder .tip{font-size:12px;}
+
+/* 记事本待办 */
+.todo-section{margin-bottom:16px;}
+.todo-section h4{font-size:14px;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.todo-section h4 .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex:none;}
+.todo-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0ece5;}
+.todo-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--green);flex:none;}
+.todo-item .txt{flex:1;font-size:15px;line-height:1.4;word-break:break-all;}
+.todo-item.done .txt{text-decoration:line-through;color:#aaa;}
+.todo-item .del{border:none;background:none;color:#bbb;font-size:17px;cursor:pointer;flex:none;padding:0 4px;line-height:1;}
+.todo-add{display:flex;gap:8px;margin-top:8px;}
+.todo-add input{flex:1;padding:9px 10px;border:1px solid #e3ddd4;border-radius:8px;font-size:14px;font-family:inherit;}
+.todo-add button{flex:none;padding:9px 14px;border:none;border-radius:8px;background:var(--green-soft);color:var(--green);font-size:14px;cursor:pointer;}
+
+/* 日历 */
+.cal{background:var(--card);border-radius:0 0 16px 16px;padding:12px;margin-bottom:12px;box-shadow:0 2px 14px rgba(0,0,0,.06);touch-action:pan-y;}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px;}
+.week div{text-align:center;font-size:12px;color:var(--sub);padding:6px 0;}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.day{min-height:74px;border-radius:10px;padding:5px 3px;cursor:pointer;border:1px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:1px;position:relative;}
+.day:active{background:var(--green-soft);}
+.day.other{opacity:.35;}
+.day.today{border-color:var(--gold);background:#fff9f2;}
+.day .num{font-size:15px;font-weight:600;line-height:1.2;}
+.day .lunar{font-size:10px;color:var(--sub);line-height:1.2;}
+.day .fest{font-size:10px;color:var(--red);font-weight:600;line-height:1.2;}
+.day .jq{font-size:10px;color:#2d7040;line-height:1.2;}
+.day.mark::after{content:"";position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--gold);}
+
+/* 弹窗 */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:18px;z-index:50;}
+.mask.show{display:flex;}
+.box{width:100%;max-width:520px;background:#fff;border-radius:16px;padding:20px;max-height:82vh;overflow:auto;}
+.box h3{font-size:17px;color:var(--green);margin-bottom:12px;}
+.box textarea{width:100%;min-height:150px;padding:12px;border:1px solid #e3ddd4;border-radius:10px;font-size:15px;resize:vertical;line-height:1.6;font-family:inherit;}
+.box .btns{display:flex;gap:10px;margin-top:14px;}
+.box .btns button{flex:1;padding:11px;border-radius:10px;border:none;font-size:15px;cursor:pointer;}
+.btn-save{background:var(--green);color:#fff;}
+.btn-cancel{background:#eee;color:var(--ink);}
+.brand-text{font-size:14px;line-height:1.8;color:#444;}
+.brand-text p{margin-bottom:10px;}
+.brand-text strong{color:var(--green);}
 </style>
 </head>
 <body>
-<div class="header">
-  <h1>Artie 2027产品日历</h1>
-  <div class="ctrl">
-    <button id="prev">←上月</button>
-    <button id="next">下月→</button>
+
+<div class="top">
+  <div class="brand">Artie 亚帝<small>随享度假心情</small></div>
+  <button class="brand-btn" id="brandBtn">品牌介绍</button>
+</div>
+
+<div class="month-head">
+  <div class="y" id="yearLabel">2027</div>
+  <div class="m" id="monthLabel">1月</div>
+</div>
+
+<div class="pic-wrap">
+  <img id="monthImg" alt="本月产品图" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+  <div class="pic-placeholder" style="display:none;">
+    <div class="big" id="phBig">1月</div>
+    <div class="tip">将本月产品图命名为 01.jpg 放入 assets 文件夹</div>
   </div>
 </div>
 
-<img id="monthImg" class="month-pic" src="" alt="月度产品图">
-<div class="calendar-wrap">
+<div class="cal">
   <div class="week">
-    <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+    <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
   </div>
-  <div class="days" id="daysBox"></div>
+  <div class="grid" id="grid"></div>
 </div>
 
-<div class="modal" id="modal">
-  <div class="modal-box">
-    <h3 id="modalTitle">备忘录</h3>
-    <textarea id="noteText" placeholder="写下今天的待办、想法..."></textarea>
-    <div class="modal-btns">
-      <button class="btn-close" id="closeModal">关闭</button>
-      <button class="btn-save" id="saveNote">保存</button>
+<!-- 记事本弹窗 -->
+<div class="mask" id="noteMask">
+  <div class="box">
+    <h3 id="noteTitle">记事本</h3>
+
+    <div class="todo-section">
+      <h4><span class="dot"></span>重要且紧急（立即做）</h4>
+      <div id="urgentList"></div>
+      <div class="todo-add">
+        <input id="urgentInput" type="text" placeholder="添加一项待办…" maxlength="60">
+        <button id="urgentAdd">添加</button>
+      </div>
+    </div>
+
+    <div class="todo-section">
+      <h4><span class="dot"></span>重要不紧急（计划做）</h4>
+      <div id="planList"></div>
+      <div class="todo-add">
+        <input id="planInput" type="text" placeholder="添加一项待办…" maxlength="60">
+        <button id="planAdd">添加</button>
+      </div>
+    </div>
+
+    <div class="btns">
+      <button class="btn-cancel" id="noteCancel">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 品牌介绍弹窗 -->
+<div class="mask" id="brandMask">
+  <div class="box">
+    <h3>亚帝（Artie）</h3>
+    <div class="brand-text">
+      <p>亚帝 (Artie) 度假式户外家具品牌始于 1999 年，服务遍布全球百家豪华酒店，是世界知名邮轮皇家加勒比指定供应商，随享度假式生活的倡导者。</p>
+      <p>亚帝具备完整的设计、研发、生产、销售、服务体系，拥有 34,000㎡ 自建工业园，每件产品均须满足内部“23 条生产标准”的严苛要求。亚帝始终坚持原创设计，在欧盟和国内的设计专利达 400 多项，并在国内外屡获殊荣。当前产品已出口到全球 80 多个国家和地区，在欧洲、美洲、中东、东南亚和国内拥有稳定的客户群体。</p>
+      <p>亚帝怀着“为中国留下一个高端户外家具的国际品牌，让中国制造成为高品质的象征”的梦想，以“让世界因度假式生活更美好”为企业使命，立志打造引领全球度假式生活的第一品牌、百年企业。</p>
+    </div>
+    <div class="btns">
+      <button class="btn-save" id="brandClose">关闭</button>
     </div>
   </div>
 </div>
 
 <script>
-// ========== 配置区：替换你12张月度产品图片 ==========
-const monthImgs = [
-  "https://xxx/01.jpg", //1月
-  "https://xxx/02.jpg", //2月
-  "https://xxx/03.jpg", //3月
-  "https://xxx/04.jpg", //4月
-  "https://xxx/05.jpg", //5月
-  "https://xxx/06.jpg", //6月
-  "https://xxx/07.jpg", //7月
-  "https://xxx/08.jpg", //8月
-  "https://xxx/09.jpg", //9月
-  "https://xxx/10.jpg", //10月
-  "https://xxx/11.jpg", //11月
-  "https://xxx/12.jpg"  //12月
-];
+// ===== 2027 农历 / 节气数据（来源：香港天文台） =====
+const LUNAR = {"2026-11-01":{"m":9,"d":23,"g":"廿三","jq":""},"2026-11-02":{"m":9,"d":24,"g":"廿四","jq":""},"2026-11-03":{"m":9,"d":25,"g":"廿五","jq":""},"2026-11-04":{"m":9,"d":26,"g":"廿六","jq":""},"2026-11-05":{"m":9,"d":27,"g":"廿七","jq":""},"2026-11-06":{"m":9,"d":28,"g":"廿八","jq":""},"2026-11-07":{"m":9,"d":29,"g":"廿九","jq":"立冬"},"2026-11-08":{"m":9,"d":30,"g":"三十","jq":""},"2026-11-09":{"m":10,"d":1,"g":"十月","jq":""},"2026-11-10":{"m":10,"d":2,"g":"初二","jq":""},"2026-11-11":{"m":10,"d":3,"g":"初三","jq":""},"2026-11-12":{"m":10,"d":4,"g":"初四","jq":""},"2026-11-13":{"m":10,"d":5,"g":"初五","jq":""},"2026-11-14":{"m":10,"d":6,"g":"初六","jq":""},"2026-11-15":{"m":10,"d":7,"g":"初七","jq":""},"2026-11-16":{"m":10,"d":8,"g":"初八","jq":""},"2026-11-17":{"m":10,"d":9,"g":"初九","jq":""},"2026-11-18":{"m":10,"d":10,"g":"初十","jq":""},"2026-11-19":{"m":10,"d":11,"g":"十一","jq":""},"2026-11-20":{"m":10,"d":12,"g":"十二","jq":""},"2026-11-21":{"m":10,"d":13,"g":"十三","jq":""},"2026-11-22":{"m":10,"d":14,"g":"十四","jq":"小雪"},"2026-11-23":{"m":10,"d":15,"g":"十五","jq":""},"2026-11-24":{"m":10,"d":16,"g":"十六","jq":""},"2026-11-25":{"m":10,"d":17,"g":"十七","jq":""},"2026-11-26":{"m":10,"d":18,"g":"十八","jq":""},"2026-11-27":{"m":10,"d":19,"g":"十九","jq":""},"2026-11-28":{"m":10,"d":20,"g":"二十","jq":""},"2026-11-29":{"m":10,"d":21,"g":"廿一","jq":""},"2026-11-30":{"m":10,"d":22,"g":"廿二","jq":""},"2026-12-01":{"m":10,"d":23,"g":"廿三","jq":""},"2026-12-02":{"m":10,"d":24,"g":"廿四","jq":""},"2026-12-03":{"m":10,"d":25,"g":"廿五","jq":""},"2026-12-04":{"m":10,"d":26,"g":"廿六","jq":""},"2026-12-05":{"m":10,"d":27,"g":"廿七","jq":""},"2026-12-06":{"m":10,"d":28,"g":"廿八","jq":""},"2026-12-07":{"m":10,"d":29,"g":"廿九","jq":"大雪"},"2026-12-08":{"m":10,"d":30,"g":"三十","jq":""},"2026-12-09":{"m":11,"d":1,"g":"十一月","jq":""},"2026-12-10":{"m":11,"d":2,"g":"初二","jq":""},"2026-12-11":{"m":11,"d":3,"g":"初三","jq":""},"2026-12-12":{"m":11,"d":4,"g":"初四","jq":""},"2026-12-13":{"m":11,"d":5,"g":"初五","jq":""},"2026-12-14":{"m":11,"d":6,"g":"初六","jq":""},"2026-12-15":{"m":11,"d":7,"g":"初七","jq":""},"2026-12-16":{"m":11,"d":8,"g":"初八","jq":""},"2026-12-17":{"m":11,"d":9,"g":"初九","jq":""},"2026-12-18":{"m":11,"d":10,"g":"初十","jq":""},"2026-12-19":{"m":11,"d":11,"g":"十一","jq":""},"2026-12-20":{"m":11,"d":12,"g":"十二","jq":""},"2026-12-21":{"m":11,"d":13,"g":"十三","jq":""},"2026-12-22":{"m":11,"d":14,"g":"十四","jq":"冬至"},"2026-12-23":{"m":11,"d":15,"g":"十五","jq":""},"2026-12-24":{"m":11,"d":16,"g":"十六","jq":""},"2026-12-25":{"m":11,"d":17,"g":"十七","jq":""},"2026-12-26":{"m":11,"d":18,"g":"十八","jq":""},"2026-12-27":{"m":11,"d":19,"g":"十九","jq":""},"2026-12-28":{"m":11,"d":20,"g":"二十","jq":""},"2026-12-29":{"m":11,"d":21,"g":"廿一","jq":""},"2026-12-30":{"m":11,"d":22,"g":"廿二","jq":""},"2026-12-31":{"m":11,"d":23,"g":"廿三","jq":""},"2027-01-01":{"m":null,"d":24,"g":"廿四","jq":""},"2027-01-02":{"m":null,"d":25,"g":"廿五","jq":""},"2027-01-03":{"m":null,"d":26,"g":"廿六","jq":""},"2027-01-04":{"m":null,"d":27,"g":"廿七","jq":""},"2027-01-05":{"m":null,"d":28,"g":"廿八","jq":"小寒"},"2027-01-06":{"m":null,"d":29,"g":"廿九","jq":""},"2027-01-07":{"m":null,"d":30,"g":"三十","jq":""},"2027-01-08":{"m":12,"d":1,"g":"十二月","jq":""},"2027-01-09":{"m":12,"d":2,"g":"初二","jq":""},"2027-01-10":{"m":12,"d":3,"g":"初三","jq":""},"2027-01-11":{"m":12,"d":4,"g":"初四","jq":""},"2027-01-12":{"m":12,"d":5,"g":"初五","jq":""},"2027-01-13":{"m":12,"d":6,"g":"初六","jq":""},"2027-01-14":{"m":12,"d":7,"g":"初七","jq":""},"2027-01-15":{"m":12,"d":8,"g":"初八","jq":""},"2027-01-16":{"m":12,"d":9,"g":"初九","jq":""},"2027-01-17":{"m":12,"d":10,"g":"初十","jq":""},"2027-01-18":{"m":12,"d":11,"g":"十一","jq":""},"2027-01-19":{"m":12,"d":12,"g":"十二","jq":""},"2027-01-20":{"m":12,"d":13,"g":"十三","jq":"大寒"},"2027-01-21":{"m":12,"d":14,"g":"十四","jq":""},"2027-01-22":{"m":12,"d":15,"g":"十五","jq":""},"2027-01-23":{"m":12,"d":16,"g":"十六","jq":""},"2027-01-24":{"m":12,"d":17,"g":"十七","jq":""},"2027-01-25":{"m":12,"d":18,"g":"十八","jq":""},"2027-01-26":{"m":12,"d":19,"g":"十九","jq":""},"2027-01-27":{"m":12,"d":20,"g":"二十","jq":""},"2027-01-28":{"m":12,"d":21,"g":"廿一","jq":""},"2027-01-29":{"m":12,"d":22,"g":"廿二","jq":""},"2027-01-30":{"m":12,"d":23,"g":"廿三","jq":""},"2027-01-31":{"m":12,"d":24,"g":"廿四","jq":""},"2027-02-01":{"m":12,"d":25,"g":"廿五","jq":""},"2027-02-02":{"m":12,"d":26,"g":"廿六","jq":""},"2027-02-03":{"m":12,"d":27,"g":"廿七","jq":""},"2027-02-04":{"m":12,"d":28,"g":"廿八","jq":"立春"},"2027-02-05":{"m":12,"d":29,"g":"廿九","jq":"","cx":1},"2027-02-06":{"m":1,"d":1,"g":"正月","jq":""},"2027-02-07":{"m":1,"d":2,"g":"初二","jq":""},"2027-02-08":{"m":1,"d":3,"g":"初三","jq":""},"2027-02-09":{"m":1,"d":4,"g":"初四","jq":""},"2027-02-10":{"m":1,"d":5,"g":"初五","jq":""},"2027-02-11":{"m":1,"d":6,"g":"初六","jq":""},"2027-02-12":{"m":1,"d":7,"g":"初七","jq":""},"2027-02-13":{"m":1,"d":8,"g":"初八","jq":""},"2027-02-14":{"m":1,"d":9,"g":"初九","jq":""},"2027-02-15":{"m":1,"d":10,"g":"初十","jq":""},"2027-02-16":{"m":1,"d":11,"g":"十一","jq":""},"2027-02-17":{"m":1,"d":12,"g":"十二","jq":""},"2027-02-18":{"m":1,"d":13,"g":"十三","jq":""},"2027-02-19":{"m":1,"d":14,"g":"十四","jq":"雨水"},"2027-02-20":{"m":1,"d":15,"g":"十五","jq":""},"2027-02-21":{"m":1,"d":16,"g":"十六","jq":""},"2027-02-22":{"m":1,"d":17,"g":"十七","jq":""},"2027-02-23":{"m":1,"d":18,"g":"十八","jq":""},"2027-02-24":{"m":1,"d":19,"g":"十九","jq":""},"2027-02-25":{"m":1,"d":20,"g":"二十","jq":""},"2027-02-26":{"m":1,"d":21,"g":"廿一","jq":""},"2027-02-27":{"m":1,"d":22,"g":"廿二","jq":""},"2027-02-28":{"m":1,"d":23,"g":"廿三","jq":""},"2027-03-01":{"m":1,"d":24,"g":"廿四","jq":""},"2027-03-02":{"m":1,"d":25,"g":"廿五","jq":""},"2027-03-03":{"m":1,"d":26,"g":"廿六","jq":""},"2027-03-04":{"m":1,"d":27,"g":"廿七","jq":""},"2027-03-05":{"m":1,"d":28,"g":"廿八","jq":""},"2027-03-06":{"m":1,"d":29,"g":"廿九","jq":"惊蛰"},"2027-03-07":{"m":1,"d":30,"g":"三十","jq":""},"2027-03-08":{"m":2,"d":1,"g":"二月","jq":""},"2027-03-09":{"m":2,"d":2,"g":"初二","jq":""},"2027-03-10":{"m":2,"d":3,"g":"初三","jq":""},"2027-03-11":{"m":2,"d":4,"g":"初四","jq":""},"2027-03-12":{"m":2,"d":5,"g":"初五","jq":""},"2027-03-13":{"m":2,"d":6,"g":"初六","jq":""},"2027-03-14":{"m":2,"d":7,"g":"初七","jq":""},"2027-03-15":{"m":2,"d":8,"g":"初八","jq":""},"2027-03-16":{"m":2,"d":9,"g":"初九","jq":""},"2027-03-17":{"m":2,"d":10,"g":"初十","jq":""},"2027-03-18":{"m":2,"d":11,"g":"十一","jq":""},"2027-03-19":{"m":2,"d":12,"g":"十二","jq":""},"2027-03-20":{"m":2,"d":13,"g":"十三","jq":""},"2027-03-21":{"m":2,"d":14,"g":"十四","jq":"春分"},"2027-03-22":{"m":2,"d":15,"g":"十五","jq":""},"2027-03-23":{"m":2,"d":16,"g":"十六","jq":""},"2027-03-24":{"m":2,"d":17,"g":"十七","jq":""},"2027-03-25":{"m":2,"d":18,"g":"十八","jq":""},"2027-03-26":{"m":2,"d":19,"g":"十九","jq":""},"2027-03-27":{"m":2,"d":20,"g":"二十","jq":""},"2027-03-28":{"m":2,"d":21,"g":"廿一","jq":""},"2027-03-29":{"m":2,"d":22,"g":"廿二","jq":""},"2027-03-30":{"m":2,"d":23,"g":"廿三","jq":""},"2027-03-31":{"m":2,"d":24,"g":"廿四","jq":""},"2027-04-01":{"m":2,"d":25,"g":"廿五","jq":""},"2027-04-02":{"m":2,"d":26,"g":"廿六","jq":""},"2027-04-03":{"m":2,"d":27,"g":"廿七","jq":""},"2027-04-04":{"m":2,"d":28,"g":"廿八","jq":""},"2027-04-05":{"m":2,"d":29,"g":"廿九","jq":"清明"},"2027-04-06":{"m":2,"d":30,"g":"三十","jq":""},"2027-04-07":{"m":3,"d":1,"g":"三月","jq":""},"2027-04-08":{"m":3,"d":2,"g":"初二","jq":""},"2027-04-09":{"m":3,"d":3,"g":"初三","jq":""},"2027-04-10":{"m":3,"d":4,"g":"初四","jq":""},"2027-04-11":{"m":3,"d":5,"g":"初五","jq":""},"2027-04-12":{"m":3,"d":6,"g":"初六","jq":""},"2027-04-13":{"m":3,"d":7,"g":"初七","jq":""},"2027-04-14":{"m":3,"d":8,"g":"初八","jq":""},"2027-04-15":{"m":3,"d":9,"g":"初九","jq":""},"2027-04-16":{"m":3,"d":10,"g":"初十","jq":""},"2027-04-17":{"m":3,"d":11,"g":"十一","jq":""},"2027-04-18":{"m":3,"d":12,"g":"十二","jq":""},"2027-04-19":{"m":3,"d":13,"g":"十三","jq":""},"2027-04-20":{"m":3,"d":14,"g":"十四","jq":"谷雨"},"2027-04-21":{"m":3,"d":15,"g":"十五","jq":""},"2027-04-22":{"m":3,"d":16,"g":"十六","jq":""},"2027-04-23":{"m":3,"d":17,"g":"十七","jq":""},"2027-04-24":{"m":3,"d":18,"g":"十八","jq":""},"2027-04-25":{"m":3,"d":19,"g":"十九","jq":""},"2027-04-26":{"m":3,"d":20,"g":"二十","jq":""},"2027-04-27":{"m":3,"d":21,"g":"廿一","jq":""},"2027-04-28":{"m":3,"d":22,"g":"廿二","jq":""},"2027-04-29":{"m":3,"d":23,"g":"廿三","jq":""},"2027-04-30":{"m":3,"d":24,"g":"廿四","jq":""},"2027-05-01":{"m":3,"d":25,"g":"廿五","jq":""},"2027-05-02":{"m":3,"d":26,"g":"廿六","jq":""},"2027-05-03":{"m":3,"d":27,"g":"廿七","jq":""},"2027-05-04":{"m":3,"d":28,"g":"廿八","jq":""},"2027-05-05":{"m":3,"d":29,"g":"廿九","jq":""},"2027-05-06":{"m":4,"d":1,"g":"四月","jq":"立夏"},"2027-05-07":{"m":4,"d":2,"g":"初二","jq":""},"2027-05-08":{"m":4,"d":3,"g":"初三","jq":""},"2027-05-09":{"m":4,"d":4,"g":"初四","jq":""},"2027-05-10":{"m":4,"d":5,"g":"初五","jq":""},"2027-05-11":{"m":4,"d":6,"g":"初六","jq":""},"2027-05-12":{"m":4,"d":7,"g":"初七","jq":""},"2027-05-13":{"m":4,"d":8,"g":"初八","jq":""},"2027-05-14":{"m":4,"d":9,"g":"初九","jq":""},"2027-05-15":{"m":4,"d":10,"g":"初十","jq":""},"2027-05-16":{"m":4,"d":11,"g":"十一","jq":""},"2027-05-17":{"m":4,"d":12,"g":"十二","jq":""},"2027-05-18":{"m":4,"d":13,"g":"十三","jq":""},"2027-05-19":{"m":4,"d":14,"g":"十四","jq":""},"2027-05-20":{"m":4,"d":15,"g":"十五","jq":""},"2027-05-21":{"m":4,"d":16,"g":"十六","jq":"小满"},"2027-05-22":{"m":4,"d":17,"g":"十七","jq":""},"2027-05-23":{"m":4,"d":18,"g":"十八","jq":""},"2027-05-24":{"m":4,"d":19,"g":"十九","jq":""},"2027-05-25":{"m":4,"d":20,"g":"二十","jq":""},"2027-05-26":{"m":4,"d":21,"g":"廿一","jq":""},"2027-05-27":{"m":4,"d":22,"g":"廿二","jq":""},"2027-05-28":{"m":4,"d":23,"g":"廿三","jq":""},"2027-05-29":{"m":4,"d":24,"g":"廿四","jq":""},"2027-05-30":{"m":4,"d":25,"g":"廿五","jq":""},"2027-05-31":{"m":4,"d":26,"g":"廿六","jq":""},"2027-06-01":{"m":4,"d":27,"g":"廿七","jq":""},"2027-06-02":{"m":4,"d":28,"g":"廿八","jq":""},"2027-06-03":{"m":4,"d":29,"g":"廿九","jq":""},"2027-06-04":{"m":4,"d":30,"g":"三十","jq":""},"2027-06-05":{"m":5,"d":1,"g":"五月","jq":""},"2027-06-06":{"m":5,"d":2,"g":"初二","jq":"芒种"},"2027-06-07":{"m":5,"d":3,"g":"初三","jq":""},"2027-06-08":{"m":5,"d":4,"g":"初四","jq":""},"2027-06-09":{"m":5,"d":5,"g":"初五","jq":""},"2027-06-10":{"m":5,"d":6,"g":"初六","jq":""},"2027-06-11":{"m":5,"d":7,"g":"初七","jq":""},"2027-06-12":{"m":5,"d":8,"g":"初八","jq":""},"2027-06-13":{"m":5,"d":9,"g":"初九","jq":""},"2027-06-14":{"m":5,"d":10,"g":"初十","jq":""},"2027-06-15":{"m":5,"d":11,"g":"十一","jq":""},"2027-06-16":{"m":5,"d":12,"g":"十二","jq":""},"2027-06-17":{"m":5,"d":13,"g":"十三","jq":""},"2027-06-18":{"m":5,"d":14,"g":"十四","jq":""},"2027-06-19":{"m":5,"d":15,"g":"十五","jq":""},"2027-06-20":{"m":5,"d":16,"g":"十六","jq":""},"2027-06-21":{"m":5,"d":17,"g":"十七","jq":"夏至"},"2027-06-22":{"m":5,"d":18,"g":"十八","jq":""},"2027-06-23":{"m":5,"d":19,"g":"十九","jq":""},"2027-06-24":{"m":5,"d":20,"g":"二十","jq":""},"2027-06-25":{"m":5,"d":21,"g":"廿一","jq":""},"2027-06-26":{"m":5,"d":22,"g":"廿二","jq":""},"2027-06-27":{"m":5,"d":23,"g":"廿三","jq":""},"2027-06-28":{"m":5,"d":24,"g":"廿四","jq":""},"2027-06-29":{"m":5,"d":25,"g":"廿五","jq":""},"2027-06-30":{"m":5,"d":26,"g":"廿六","jq":""},"2027-07-01":{"m":5,"d":27,"g":"廿七","jq":""},"2027-07-02":{"m":5,"d":28,"g":"廿八","jq":""},"2027-07-03":{"m":5,"d":29,"g":"廿九","jq":""},"2027-07-04":{"m":6,"d":1,"g":"六月","jq":""},"2027-07-05":{"m":6,"d":2,"g":"初二","jq":""},"2027-07-06":{"m":6,"d":3,"g":"初三","jq":""},"2027-07-07":{"m":6,"d":4,"g":"初四","jq":"小暑"},"2027-07-08":{"m":6,"d":5,"g":"初五","jq":""},"2027-07-09":{"m":6,"d":6,"g":"初六","jq":""},"2027-07-10":{"m":6,"d":7,"g":"初七","jq":""},"2027-07-11":{"m":6,"d":8,"g":"初八","jq":""},"2027-07-12":{"m":6,"d":9,"g":"初九","jq":""},"2027-07-13":{"m":6,"d":10,"g":"初十","jq":""},"2027-07-14":{"m":6,"d":11,"g":"十一","jq":""},"2027-07-15":{"m":6,"d":12,"g":"十二","jq":""},"2027-07-16":{"m":6,"d":13,"g":"十三","jq":""},"2027-07-17":{"m":6,"d":14,"g":"十四","jq":""},"2027-07-18":{"m":6,"d":15,"g":"十五","jq":""},"2027-07-19":{"m":6,"d":16,"g":"十六","jq":""},"2027-07-20":{"m":6,"d":17,"g":"十七","jq":""},"2027-07-21":{"m":6,"d":18,"g":"十八","jq":""},"2027-07-22":{"m":6,"d":19,"g":"十九","jq":""},"2027-07-23":{"m":6,"d":20,"g":"二十","jq":"大暑"},"2027-07-24":{"m":6,"d":21,"g":"廿一","jq":""},"2027-07-25":{"m":6,"d":22,"g":"廿二","jq":""},"2027-07-26":{"m":6,"d":23,"g":"廿三","jq":""},"2027-07-27":{"m":6,"d":24,"g":"廿四","jq":""},"2027-07-28":{"m":6,"d":25,"g":"廿五","jq":""},"2027-07-29":{"m":6,"d":26,"g":"廿六","jq":""},"2027-07-30":{"m":6,"d":27,"g":"廿七","jq":""},"2027-07-31":{"m":6,"d":28,"g":"廿八","jq":""},"2027-08-01":{"m":6,"d":29,"g":"廿九","jq":""},"2027-08-02":{"m":7,"d":1,"g":"七月","jq":""},"2027-08-03":{"m":7,"d":2,"g":"初二","jq":""},"2027-08-04":{"m":7,"d":3,"g":"初三","jq":""},"2027-08-05":{"m":7,"d":4,"g":"初四","jq":""},"2027-08-06":{"m":7,"d":5,"g":"初五","jq":""},"2027-08-07":{"m":7,"d":6,"g":"初六","jq":""},"2027-08-08":{"m":7,"d":7,"g":"初七","jq":"立秋"},"2027-08-09":{"m":7,"d":8,"g":"初八","jq":""},"2027-08-10":{"m":7,"d":9,"g":"初九","jq":""},"2027-08-11":{"m":7,"d":10,"g":"初十","jq":""},"2027-08-12":{"m":7,"d":11,"g":"十一","jq":""},"2027-08-13":{"m":7,"d":12,"g":"十二","jq":""},"2027-08-14":{"m":7,"d":13,"g":"十三","jq":""},"2027-08-15":{"m":7,"d":14,"g":"十四","jq":""},"2027-08-16":{"m":7,"d":15,"g":"十五","jq":""},"2027-08-17":{"m":7,"d":16,"g":"十六","jq":""},"2027-08-18":{"m":7,"d":17,"g":"十七","jq":""},"2027-08-19":{"m":7,"d":18,"g":"十八","jq":""},"2027-08-20":{"m":7,"d":19,"g":"十九","jq":""},"2027-08-21":{"m":7,"d":20,"g":"二十","jq":""},"2027-08-22":{"m":7,"d":21,"g":"廿一","jq":""},"2027-08-23":{"m":7,"d":22,"g":"廿二","jq":"处暑"},"2027-08-24":{"m":7,"d":23,"g":"廿三","jq":""},"2027-08-25":{"m":7,"d":24,"g":"廿四","jq":""},"2027-08-26":{"m":7,"d":25,"g":"廿五","jq":""},"2027-08-27":{"m":7,"d":26,"g":"廿六","jq":""},"2027-08-28":{"m":7,"d":27,"g":"廿七","jq":""},"2027-08-29":{"m":7,"d":28,"g":"廿八","jq":""},"2027-08-30":{"m":7,"d":29,"g":"廿九","jq":""},"2027-08-31":{"m":7,"d":30,"g":"三十","jq":""},"2027-09-01":{"m":8,"d":1,"g":"八月","jq":""},"2027-09-02":{"m":8,"d":2,"g":"初二","jq":""},"2027-09-03":{"m":8,"d":3,"g":"初三","jq":""},"2027-09-04":{"m":8,"d":4,"g":"初四","jq":""},"2027-09-05":{"m":8,"d":5,"g":"初五","jq":""},"2027-09-06":{"m":8,"d":6,"g":"初六","jq":""},"2027-09-07":{"m":8,"d":7,"g":"初七","jq":""},"2027-09-08":{"m":8,"d":8,"g":"初八","jq":"白露"},"2027-09-09":{"m":8,"d":9,"g":"初九","jq":""},"2027-09-10":{"m":8,"d":10,"g":"初十","jq":""},"2027-09-11":{"m":8,"d":11,"g":"十一","jq":""},"2027-09-12":{"m":8,"d":12,"g":"十二","jq":""},"2027-09-13":{"m":8,"d":13,"g":"十三","jq":""},"2027-09-14":{"m":8,"d":14,"g":"十四","jq":""},"2027-09-15":{"m":8,"d":15,"g":"十五","jq":""},"2027-09-16":{"m":8,"d":16,"g":"十六","jq":""},"2027-09-17":{"m":8,"d":17,"g":"十七","jq":""},"2027-09-18":{"m":8,"d":18,"g":"十八","jq":""},"2027-09-19":{"m":8,"d":19,"g":"十九","jq":""},"2027-09-20":{"m":8,"d":20,"g":"二十","jq":""},"2027-09-21":{"m":8,"d":21,"g":"廿一","jq":""},"2027-09-22":{"m":8,"d":22,"g":"廿二","jq":""},"2027-09-23":{"m":8,"d":23,"g":"廿三","jq":"秋分"},"2027-09-24":{"m":8,"d":24,"g":"廿四","jq":""},"2027-09-25":{"m":8,"d":25,"g":"廿五","jq":""},"2027-09-26":{"m":8,"d":26,"g":"廿六","jq":""},"2027-09-27":{"m":8,"d":27,"g":"廿七","jq":""},"2027-09-28":{"m":8,"d":28,"g":"廿八","jq":""},"2027-09-29":{"m":8,"d":29,"g":"廿九","jq":""},"2027-09-30":{"m":9,"d":1,"g":"九月","jq":""},"2027-10-01":{"m":9,"d":2,"g":"初二","jq":""},"2027-10-02":{"m":9,"d":3,"g":"初三","jq":""},"2027-10-03":{"m":9,"d":4,"g":"初四","jq":""},"2027-10-04":{"m":9,"d":5,"g":"初五","jq":""},"2027-10-05":{"m":9,"d":6,"g":"初六","jq":""},"2027-10-06":{"m":9,"d":7,"g":"初七","jq":""},"2027-10-07":{"m":9,"d":8,"g":"初八","jq":""},"2027-10-08":{"m":9,"d":9,"g":"初九","jq":"寒露"},"2027-10-09":{"m":9,"d":10,"g":"初十","jq":""},"2027-10-10":{"m":9,"d":11,"g":"十一","jq":""},"2027-10-11":{"m":9,"d":12,"g":"十二","jq":""},"2027-10-12":{"m":9,"d":13,"g":"十三","jq":""},"2027-10-13":{"m":9,"d":14,"g":"十四","jq":""},"2027-10-14":{"m":9,"d":15,"g":"十五","jq":""},"2027-10-15":{"m":9,"d":16,"g":"十六","jq":""},"2027-10-16":{"m":9,"d":17,"g":"十七","jq":""},"2027-10-17":{"m":9,"d":18,"g":"十八","jq":""},"2027-10-18":{"m":9,"d":19,"g":"十九","jq":""},"2027-10-19":{"m":9,"d":20,"g":"二十","jq":""},"2027-10-20":{"m":9,"d":21,"g":"廿一","jq":""},"2027-10-21":{"m":9,"d":22,"g":"廿二","jq":""},"2027-10-22":{"m":9,"d":23,"g":"廿三","jq":""},"2027-10-23":{"m":9,"d":24,"g":"廿四","jq":"霜降"},"2027-10-24":{"m":9,"d":25,"g":"廿五","jq":""},"2027-10-25":{"m":9,"d":26,"g":"廿六","jq":""},"2027-10-26":{"m":9,"d":27,"g":"廿七","jq":""},"2027-10-27":{"m":9,"d":28,"g":"廿八","jq":""},"2027-10-28":{"m":9,"d":29,"g":"廿九","jq":""},"2027-10-29":{"m":10,"d":1,"g":"十月","jq":""},"2027-10-30":{"m":10,"d":2,"g":"初二","jq":""},"2027-10-31":{"m":10,"d":3,"g":"初三","jq":""},"2027-11-01":{"m":10,"d":4,"g":"初四","jq":""},"2027-11-02":{"m":10,"d":5,"g":"初五","jq":""},"2027-11-03":{"m":10,"d":6,"g":"初六","jq":""},"2027-11-04":{"m":10,"d":7,"g":"初七","jq":""},"2027-11-05":{"m":10,"d":8,"g":"初八","jq":""},"2027-11-06":{"m":10,"d":9,"g":"初九","jq":""},"2027-11-07":{"m":10,"d":10,"g":"初十","jq":"立冬"},"2027-11-08":{"m":10,"d":11,"g":"十一","jq":""},"2027-11-09":{"m":10,"d":12,"g":"十二","jq":""},"2027-11-10":{"m":10,"d":13,"g":"十三","jq":""},"2027-11-11":{"m":10,"d":14,"g":"十四","jq":""},"2027-11-12":{"m":10,"d":15,"g":"十五","jq":""},"2027-11-13":{"m":10,"d":16,"g":"十六","jq":""},"2027-11-14":{"m":10,"d":17,"g":"十七","jq":""},"2027-11-15":{"m":10,"d":18,"g":"十八","jq":""},"2027-11-16":{"m":10,"d":19,"g":"十九","jq":""},"2027-11-17":{"m":10,"d":20,"g":"二十","jq":""},"2027-11-18":{"m":10,"d":21,"g":"廿一","jq":""},"2027-11-19":{"m":10,"d":22,"g":"廿二","jq":""},"2027-11-20":{"m":10,"d":23,"g":"廿三","jq":""},"2027-11-21":{"m":10,"d":24,"g":"廿四","jq":""},"2027-11-22":{"m":10,"d":25,"g":"廿五","jq":"小雪"},"2027-11-23":{"m":10,"d":26,"g":"廿六","jq":""},"2027-11-24":{"m":10,"d":27,"g":"廿七","jq":""},"2027-11-25":{"m":10,"d":28,"g":"廿八","jq":""},"2027-11-26":{"m":10,"d":29,"g":"廿九","jq":""},"2027-11-27":{"m":10,"d":30,"g":"三十","jq":""},"2027-11-28":{"m":11,"d":1,"g":"十一月","jq":""},"2027-11-29":{"m":11,"d":2,"g":"初二","jq":""},"2027-11-30":{"m":11,"d":3,"g":"初三","jq":""},"2027-12-01":{"m":11,"d":4,"g":"初四","jq":""},"2027-12-02":{"m":11,"d":5,"g":"初五","jq":""},"2027-12-03":{"m":11,"d":6,"g":"初六","jq":""},"2027-12-04":{"m":11,"d":7,"g":"初七","jq":""},"2027-12-05":{"m":11,"d":8,"g":"初八","jq":""},"2027-12-06":{"m":11,"d":9,"g":"初九","jq":""},"2027-12-07":{"m":11,"d":10,"g":"初十","jq":"大雪"},"2027-12-08":{"m":11,"d":11,"g":"十一","jq":""},"2027-12-09":{"m":11,"d":12,"g":"十二","jq":""},"2027-12-10":{"m":11,"d":13,"g":"十三","jq":""},"2027-12-11":{"m":11,"d":14,"g":"十四","jq":""},"2027-12-12":{"m":11,"d":15,"g":"十五","jq":""},"2027-12-13":{"m":11,"d":16,"g":"十六","jq":""},"2027-12-14":{"m":11,"d":17,"g":"十七","jq":""},"2027-12-15":{"m":11,"d":18,"g":"十八","jq":""},"2027-12-16":{"m":11,"d":19,"g":"十九","jq":""},"2027-12-17":{"m":11,"d":20,"g":"二十","jq":""},"2027-12-18":{"m":11,"d":21,"g":"廿一","jq":""},"2027-12-19":{"m":11,"d":22,"g":"廿二","jq":""},"2027-12-20":{"m":11,"d":23,"g":"廿三","jq":""},"2027-12-21":{"m":11,"d":24,"g":"廿四","jq":""},"2027-12-22":{"m":11,"d":25,"g":"廿五","jq":"冬至"},"2027-12-23":{"m":11,"d":26,"g":"廿六","jq":""},"2027-12-24":{"m":11,"d":27,"g":"廿七","jq":""},"2027-12-25":{"m":11,"d":28,"g":"廿八","jq":""},"2027-12-26":{"m":11,"d":29,"g":"廿九","jq":""},"2027-12-27":{"m":11,"d":30,"g":"三十","jq":""},"2027-12-28":{"m":12,"d":1,"g":"十二月","jq":""},"2027-12-29":{"m":12,"d":2,"g":"初二","jq":""},"2027-12-30":{"m":12,"d":3,"g":"初三","jq":""},"2027-12-31":{"m":12,"d":4,"g":"初四","jq":""}};
 
-// 2027节气、节日数据
-const festivalData = {
-  "2027-01-01":"元旦",
-  "2027-01-20":"大寒",
-  "2027-02-04":"立春",
-  "2027-02-06":"除夕",
-  "2027-02-07":"春节",
-  "2027-02-19":"雨水",
-  "2027-03-05":"惊蛰",
-  "2027-03-20":"春分",
-  "2027-04-04":"清明",
-  "2027-04-20":"谷雨",
-  "2027-05-01":"劳动节",
-  "2027-05-05":"立夏",
-  "2027-05-21":"小满",
-  "2027-06-05":"芒种",
-  "2027-06-21":"夏至",
-  "2027-07-07":"小暑",
-  "2027-07-22":"大暑",
-  "2027-08-07":"立秋",
-  "2027-08-23":"处暑",
-  "2027-09-08":"白露",
-  "2027-09-23":"秋分",
-  "2027-10-01":"国庆",
-  "2027-10-08":"寒露",
-  "2027-10-23":"霜降",
-  "2027-11-07":"立冬",
-  "2027-11-22":"小雪",
-  "2027-12-07":"大雪",
-  "2027-12-21":"冬至"
+// 公历固定节日（月-日）
+const SOLAR_FEST = {
+  "01-01":"元旦","02-14":"情人节","03-08":"妇女节","03-12":"植树节",
+  "03-14":"白色情人节","04-01":"愚人节","05-01":"劳动节","05-04":"青年节",
+  "06-01":"儿童节","07-01":"建党节","08-01":"建军节","09-10":"教师节",
+  "10-01":"国庆节","10-31":"万圣节","12-24":"平安夜","12-25":"圣诞节"
 };
-
-// 农历简易转换库（轻量版）
-const lunar = {
-  // 这里内置2027农历，如需完整精确农历，我可以给你完整版
-  getLunar(date){
-    const m = date.getMonth()+1;
-    const d = date.getDate();
-    return `${m}月${d}日`;
-  }
+// 公历浮动节日（完整日期：母亲节/父亲节/感恩节/复活节）
+const FLOAT_FEST = {
+  "2026-04-05":"复活节","2026-05-10":"母亲节","2026-06-21":"父亲节","2026-11-26":"感恩节",
+  "2027-03-28":"复活节","2027-05-09":"母亲节","2027-06-20":"父亲节","2027-11-25":"感恩节"
 };
+// 农历节日（月-日）
+const LUNAR_FEST = {"1-1":"春节","1-15":"元宵节","5-5":"端午节","7-7":"七夕节","8-15":"中秋节","9-9":"重阳节","12-8":"腊八节"};
 
-// 备忘本地存储
-let notes = JSON.parse(localStorage.getItem("calNotes")) || {};
-let currentYear = 2027;
-let currentMonth = 0;
-let selectDate = null;
+// 可浏览月份：2026年11月、12月 + 2027年全年
+const MONTHS = [{y:2026,m:11},{y:2026,m:12}];
+for(let m=1;m<=12;m++) MONTHS.push({y:2027,m});
 
-const daysBox = document.getElementById("daysBox");
+const monthImgFor = m => `assets/${String(m).padStart(2,'0')}.jpg`;
+
+// 初始自动定位到今天所在月份
+const now = new Date();
+let cur = MONTHS.findIndex(o=>o.y===now.getFullYear() && o.m===now.getMonth()+1);
+if(cur < 0) cur = MONTHS.findIndex(o=>o.y===2027 && o.m===1);
+if(cur < 0) cur = 0;
+
+let notes = {};
+try{ notes = JSON.parse(localStorage.getItem("artieCalNotes")) || {}; }catch(e){ notes = {}; }
+// 兼容旧版纯文本备忘：迁移到「重要且紧急」
+for(const k in notes){
+  const v = notes[k];
+  if(typeof v === "string"){
+    notes[k] = { urgent: v.trim()? [{t:v.trim(),done:false}] : [], plan: [] };
+  } else if(!v || typeof v!=="object"){ delete notes[k]; }
+  else { v.urgent = v.urgent||[]; v.plan = v.plan||[]; }
+}
+function hasTodo(k){ const n=notes[k]; return n && (n.urgent.length||n.plan.length); }
+let curKey = null;
+
+const grid = document.getElementById("grid");
 const monthImg = document.getElementById("monthImg");
-const modal = document.getElementById("modal");
-const modalTitle = document.getElementById("modalTitle");
-const noteText = document.getElementById("noteText");
+const phBig = document.getElementById("phBig");
 
-function renderCalendar(){
-  monthImg.src = monthImgs[currentMonth];
-  daysBox.innerHTML = "";
-  const m = currentMonth + 1;
-  const firstDay = new Date(currentYear, currentMonth, 1);
-  const lastDay = new Date(currentYear, currentMonth+1, 0);
-  const startWeek = firstDay.getDay();
-  const totalDays = lastDay.getDate();
+function pad(n){ return String(n).padStart(2,'0'); }
 
-  // 上月填充
-  const prevLast = new Date(currentYear, currentMonth, 0).getDate();
+function dayInfo(key){
+  const L = LUNAR[key] || {};
+  let lunar = L.g || "", fest = "", jq = L.jq || "";
+  if(L.m===1 && L.d===1) lunar = "春节";
+  const lf = L.m ? LUNAR_FEST[`${L.m}-${L.d}`] : null;
+  if(lf){ fest = lf; lunar = ""; }
+  if(L.cx){ fest = "除夕"; lunar = ""; }
+  if(FLOAT_FEST[key]){ fest = FLOAT_FEST[key]; }
+  else { const sf = SOLAR_FEST[key.slice(5)]; if(sf) fest = sf; }
+  return {lunar, fest, jq};
+}
+
+function render(){
+  const {y, m} = MONTHS[cur];
+  document.getElementById("yearLabel").textContent = y;
+  document.getElementById("monthLabel").textContent = `${m}月`;
+  monthImg.style.display = "block";
+  monthImg.src = monthImgFor(m);
+  phBig.textContent = `${m}月`;
+
+  grid.innerHTML = "";
+  const first = new Date(y, m-1, 1);
+  const last = new Date(y, m, 0);
+  const startWeek = first.getDay();
+  const total = last.getDate();
+  const prevLast = new Date(y, m-1, 0).getDate();
+
   for(let i=0;i<startWeek;i++){
     const d = document.createElement("div");
     d.className = "day other";
-    d.innerText = prevLast - startWeek + i +1;
-    daysBox.appendChild(d);
+    d.innerHTML = `<div class="num">${prevLast-startWeek+i+1}</div>`;
+    grid.appendChild(d);
   }
 
-  // 当月日期
-  for(let day=1;day<=totalDays;day++){
-    const dateStr = `${currentYear}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const d = document.createElement("div");
-    d.className = "day";
-    const lunarStr = lunar.getLunar(new Date(currentYear,currentMonth,day));
-    let tip = festivalData[dateStr] || lunarStr;
-    if(notes[dateStr]) d.classList.add("has-note");
-    d.innerHTML = `<div>${day}</div><div style="font-size:10px">${tip}</div>`;
-    if(festivalData[dateStr]){
-      if(["元旦","春节","除夕","国庆","劳动节"].includes(festivalData[dateStr])){
-        d.classList.add("festival");
-      }else{
-        d.classList.add("solar");
-      }
-    }
-    d.onclick = ()=>openNote(dateStr);
-    daysBox.appendChild(d);
+  const isCur = now.getFullYear()===y && now.getMonth()+1===m;
+
+  for(let d=1;d<=total;d++){
+    const key = `${y}-${pad(m)}-${pad(d)}`;
+    const info = dayInfo(key);
+    const el = document.createElement("div");
+    let cls = "day";
+    if(isCur && d===now.getDate()) cls += " today";
+    if(hasTodo(key)) cls += " mark";
+    el.className = cls;
+
+    let html = `<div class="num">${d}</div>`;
+    if(info.fest) html += `<div class="fest">${info.fest}</div>`;
+    if(info.jq) html += `<div class="jq">${info.jq}</div>`;
+    if(info.lunar && !info.fest) html += `<div class="lunar">${info.lunar}</div>`;
+    el.innerHTML = html;
+    el.onclick = ()=>openNote(key);
+    grid.appendChild(el);
   }
 }
 
-function openNote(dateStr){
-  selectDate = dateStr;
-  modalTitle.innerText = `${dateStr} 备忘录`;
-  noteText.value = notes[dateStr] || "";
-  modal.style.display = "flex";
+// 记事本
+const noteMask = document.getElementById("noteMask");
+const noteTitle = document.getElementById("noteTitle");
+const urgentList = document.getElementById("urgentList");
+const planList = document.getElementById("planList");
+const urgentInput = document.getElementById("urgentInput");
+const planInput = document.getElementById("planInput");
+
+function ensureNote(){ if(!notes[curKey]) notes[curKey]={urgent:[],plan:[]}; return notes[curKey]; }
+function saveNotes(){ localStorage.setItem("artieCalNotes", JSON.stringify(notes)); }
+
+function renderList(box, items){
+  box.innerHTML = "";
+  items.forEach((item, idx)=>{
+    const row = document.createElement("div");
+    row.className = "todo-item" + (item.done ? " done" : "");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = item.done;
+    cb.onchange = ()=>{ item.done = cb.checked; saveNotes(); renderList(box, items); render(); };
+    const txt = document.createElement("span");
+    txt.className = "txt";
+    txt.textContent = item.t;
+    const del = document.createElement("button");
+    del.className = "del";
+    del.textContent = "×";
+    del.onclick = ()=>{ items.splice(idx,1); saveNotes(); renderList(box, items); render(); };
+    row.appendChild(cb); row.appendChild(txt); row.appendChild(del);
+    box.appendChild(row);
+  });
 }
-document.getElementById("saveNote").onclick = ()=>{
-  notes[selectDate] = noteText.value.trim();
-  localStorage.setItem("calNotes", JSON.stringify(notes));
-  modal.style.display = "none";
-  renderCalendar();
-};
-document.getElementById("closeModal").onclick = ()=> modal.style.display="none";
-document.getElementById("prev").onclick = ()=>{
-  currentMonth--;
-  if(currentMonth<0){currentMonth=11;currentYear=2026;}
-  renderCalendar();
-};
-document.getElementById("next").onclick = ()=>{
-  currentMonth++;
-  if(currentMonth>11){currentMonth=0;currentYear=2028;}
-  renderCalendar();
-};
-renderCalendar();
+
+function openNote(key){
+  curKey = key;
+  noteTitle.textContent = key + " 记事本";
+  const n = ensureNote();
+  renderList(urgentList, n.urgent);
+  renderList(planList, n.plan);
+  urgentInput.value = ""; planInput.value = "";
+  noteMask.classList.add("show");
+}
+
+function addTodo(type){
+  const input = type==="urgent" ? urgentInput : planInput;
+  const v = input.value.trim();
+  if(!v) return;
+  const n = ensureNote();
+  n[type].push({t:v, done:false});
+  saveNotes();
+  renderList(type==="urgent"?urgentList:planList, n[type]);
+  input.value = "";
+  render();
+}
+document.getElementById("urgentAdd").onclick = ()=>addTodo("urgent");
+document.getElementById("planAdd").onclick = ()=>addTodo("plan");
+urgentInput.addEventListener("keydown", e=>{ if(e.key==="Enter") addTodo("urgent"); });
+planInput.addEventListener("keydown", e=>{ if(e.key==="Enter") addTodo("plan"); });
+
+document.getElementById("noteCancel").onclick = ()=>noteMask.classList.remove("show");
+
+// 左右滑动切换月份（手机手势）
+const calBox = document.querySelector(".cal");
+let touchStartX = null;
+calBox.addEventListener("touchstart", e=>{ touchStartX = e.changedTouches[0].clientX; }, {passive:true});
+calBox.addEventListener("touchend", e=>{
+  if(touchStartX===null) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  touchStartX = null;
+  if(Math.abs(dx) < 50) return;
+  if(dx < 0){ if(cur<MONTHS.length-1){ cur++; render(); } }
+  else { if(cur>0){ cur--; render(); } }
+}, {passive:true});
+
+const brandMask = document.getElementById("brandMask");
+document.getElementById("brandBtn").onclick = ()=>brandMask.classList.add("show");
+document.getElementById("brandClose").onclick = ()=>brandMask.classList.remove("show");
+noteMask.addEventListener("click",e=>{ if(e.target===noteMask) noteMask.classList.remove("show"); });
+brandMask.addEventListener("click",e=>{ if(e.target===brandMask) brandMask.classList.remove("show"); });
+
+render();
 </script>
 </body>
 </html>
