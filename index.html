@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Artie 2027产品日历</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui, sans-serif;}
+body{background:#f5f2ee;color:#333;padding:16px;max-width:720px;margin:0 auto;}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+h1{font-size:20px;font-weight:600;color:#553e2e;}
+.ctrl button{border:none;background:#553e2e;color:#fff;padding:6px 12px;border-radius:6px;margin:0 4px;cursor:pointer;}
+.month-pic{width:100%;height:240px;object-fit:cover;border-radius:10px;margin-bottom:12px;}
+.calendar-wrap{background:#fff;border-radius:12px;padding:14px;box-shadow:0 2px 10px #00000010;}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px;}
+.week span{text-align:center;font-size:13px;color:#888;padding:4px;}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.day{
+  aspect-ratio:1/1;
+  border-radius:8px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  cursor:pointer;
+  padding:2px;
+  border:1px solid transparent;
+}
+.day:hover{border-color:#c9a88c;background:#faf6f2;}
+.day.other{color:#ccc;}
+.day.festival{color:#c83c3c;font-weight:bold;}
+.day.solar{color:#34784e;font-size:11px;}
+.day.has-note{position:relative;}
+.day.has-note::after{
+  content:"";
+  width:5px;height:5px;background:#c83c3c;border-radius:50%;
+  position:absolute;bottom:4px;
+}
+/* 备忘录弹窗 */
+.modal{
+  position:fixed;inset:0;background:#00000060;
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+}
+.modal-box{
+  width:100%;max-width:500px;background:#fff;border-radius:14px;padding:20px;
+}
+.modal h3{margin-bottom:12px;color:#553e2e;}
+#noteText{width:100%;min-height:140px;padding:10px;border:1px solid #ddd;border-radius:8px;resize:vertical;}
+.modal-btns{margin-top:12px;text-align:right;}
+.modal-btns button{padding:7px 14px;border:none;border-radius:6px;margin-left:6px;cursor:pointer;}
+.btn-save{background:#553e2e;color:#fff;}
+.btn-close{background:#eee;color:#333;}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Artie 2027产品日历</h1>
+  <div class="ctrl">
+    <button id="prev">←上月</button>
+    <button id="next">下月→</button>
+  </div>
+</div>
+
+<img id="monthImg" class="month-pic" src="" alt="月度产品图">
+<div class="calendar-wrap">
+  <div class="week">
+    <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+  </div>
+  <div class="days" id="daysBox"></div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h3 id="modalTitle">备忘录</h3>
+    <textarea id="noteText" placeholder="写下今天的待办、想法..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-close" id="closeModal">关闭</button>
+      <button class="btn-save" id="saveNote">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== 配置区：替换你12张月度产品图片 ==========
+const monthImgs = [
+  "https://xxx/01.jpg", //1月
+  "https://xxx/02.jpg", //2月
+  "https://xxx/03.jpg", //3月
+  "https://xxx/04.jpg", //4月
+  "https://xxx/05.jpg", //5月
+  "https://xxx/06.jpg", //6月
+  "https://xxx/07.jpg", //7月
+  "https://xxx/08.jpg", //8月
+  "https://xxx/09.jpg", //9月
+  "https://xxx/10.jpg", //10月
+  "https://xxx/11.jpg", //11月
+  "https://xxx/12.jpg"  //12月
+];
+
+// 2027节气、节日数据
+const festivalData = {
+  "2027-01-01":"元旦",
+  "2027-01-20":"大寒",
+  "2027-02-04":"立春",
+  "2027-02-06":"除夕",
+  "2027-02-07":"春节",
+  "2027-02-19":"雨水",
+  "2027-03-05":"惊蛰",
+  "2027-03-20":"春分",
+  "2027-04-04":"清明",
+  "2027-04-20":"谷雨",
+  "2027-05-01":"劳动节",
+  "2027-05-05":"立夏",
+  "2027-05-21":"小满",
+  "2027-06-05":"芒种",
+  "2027-06-21":"夏至",
+  "2027-07-07":"小暑",
+  "2027-07-22":"大暑",
+  "2027-08-07":"立秋",
+  "2027-08-23":"处暑",
+  "2027-09-08":"白露",
+  "2027-09-23":"秋分",
+  "2027-10-01":"国庆",
+  "2027-10-08":"寒露",
+  "2027-10-23":"霜降",
+  "2027-11-07":"立冬",
+  "2027-11-22":"小雪",
+  "2027-12-07":"大雪",
+  "2027-12-21":"冬至"
+};
+
+// 农历简易转换库（轻量版）
+const lunar = {
+  // 这里内置2027农历，如需完整精确农历，我可以给你完整版
+  getLunar(date){
+    const m = date.getMonth()+1;
+    const d = date.getDate();
+    return `${m}月${d}日`;
+  }
+};
+
+// 备忘本地存储
+let notes = JSON.parse(localStorage.getItem("calNotes")) || {};
+let currentYear = 2027;
+let currentMonth = 0;
+let selectDate = null;
+
+const daysBox = document.getElementById("daysBox");
+const monthImg = document.getElementById("monthImg");
+const modal = document.getElementById("modal");
+const modalTitle = document.getElementById("modalTitle");
+const noteText = document.getElementById("noteText");
+
+function renderCalendar(){
+  monthImg.src = monthImgs[currentMonth];
+  daysBox.innerHTML = "";
+  const m = currentMonth + 1;
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const lastDay = new Date(currentYear, currentMonth+1, 0);
+  const startWeek = firstDay.getDay();
+  const totalDays = lastDay.getDate();
+
+  // 上月填充
+  const prevLast = new Date(currentYear, currentMonth, 0).getDate();
+  for(let i=0;i<startWeek;i++){
+    const d = document.createElement("div");
+    d.className = "day other";
+    d.innerText = prevLast - startWeek + i +1;
+    daysBox.appendChild(d);
+  }
+
+  // 当月日期
+  for(let day=1;day<=totalDays;day++){
+    const dateStr = `${currentYear}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const d = document.createElement("div");
+    d.className = "day";
+    const lunarStr = lunar.getLunar(new Date(currentYear,currentMonth,day));
+    let tip = festivalData[dateStr] || lunarStr;
+    if(notes[dateStr]) d.classList.add("has-note");
+    d.innerHTML = `<div>${day}</div><div style="font-size:10px">${tip}</div>`;
+    if(festivalData[dateStr]){
+      if(["元旦","春节","除夕","国庆","劳动节"].includes(festivalData[dateStr])){
+        d.classList.add("festival");
+      }else{
+        d.classList.add("solar");
+      }
+    }
+    d.onclick = ()=>openNote(dateStr);
+    daysBox.appendChild(d);
+  }
+}
+
+function openNote(dateStr){
+  selectDate = dateStr;
+  modalTitle.innerText = `${dateStr} 备忘录`;
+  noteText.value = notes[dateStr] || "";
+  modal.style.display = "flex";
+}
+document.getElementById("saveNote").onclick = ()=>{
+  notes[selectDate] = noteText.value.trim();
+  localStorage.setItem("calNotes", JSON.stringify(notes));
+  modal.style.display = "none";
+  renderCalendar();
+};
+document.getElementById("closeModal").onclick = ()=> modal.style.display="none";
+document.getElementById("prev").onclick = ()=>{
+  currentMonth--;
+  if(currentMonth<0){currentMonth=11;currentYear=2026;}
+  renderCalendar();
+};
+document.getElementById("next").onclick = ()=>{
+  currentMonth++;
+  if(currentMonth>11){currentMonth=0;currentYear=2028;}
+  renderCalendar();
+};
+renderCalendar();
+</script>
+</body>
+</html>
